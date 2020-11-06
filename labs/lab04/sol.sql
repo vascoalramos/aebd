@@ -25,7 +25,16 @@ CREATE TABLE aebd.patrocinador (
     CONSTRAINT "PATROCINADOR_PK" PRIMARY KEY ("id_patrocinador")
 );
 
--- 2. (b) e (c) => feitas com o Oracle SQL Developer
+-- 2. (b) e (c) => done with Oracle SQL Developer
 
--- 3. => feito com o Oracle SQL Developer
+-- 3. => done with Oracle SQL Developer
 
+-- 4. (a) how many athletes play at "FC Porto"
+select count(*) as "#Players" from aebd.clube join aebd.jogador on aebd.clube.id_clube = aebd.jogador.id_clube where aebd.clube.nome LIKE 'FC Porto%';
+
+-- 4 (b) list all players that are "Defesa Direito" at sports teams founded at 1910
+select jogador.id_jogador, jogador.nome, idade, jogador.cidade, clube.nome as "clube_nome", clube.cidade as "clube_cidade", ano_fundacao, desc_posicao
+from aebd.jogador
+    inner join aebd.clube on jogador.id_clube = clube.id_clube
+    inner join aebd.posicao on jogador.id_posicao = posicao.id_posicao
+where desc_posicao = 'Defesa Direito' and ano_fundacao = 1910;
