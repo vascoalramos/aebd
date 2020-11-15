@@ -134,11 +134,11 @@ select job_title, employee_id, (end_date - start_date) as duration_days
 from (select * from job_history where department_id = 20) j_hist_dept_20
     inner join jobs on j_hist_dept_20.job_id = jobs.job_id;
     
--- 25 TODO: check this (year range)
+-- 25 
 select job_title, department_name, last_name, hire_date
 from (select last_name, job_id, department_id, hire_date
         from employees
-        where extract(year from hire_date) between 2001 and 2005) emps_between
+        where extract(year from hire_date) between 2000 and 2005) emps_between
     inner join jobs on emps_between.job_id = jobs.job_id
     inner join departments on emps_between.department_id = departments.department_id;
     
@@ -172,13 +172,13 @@ from employees
     inner join locations on departments.location_id = locations.location_id
     inner join countries on locations.country_id = countries.country_id;
     
--- 31 TODO: check this
+-- 31
 select extract(month from hire_date) as month, count(employee_id)
 from (select location_id from locations where city = 'Seattle') seattle
     inner join departments on seattle.location_id = departments.location_id
     inner join employees on departments.department_id = employees.department_id
 group by extract(month from hire_date)
-having count(employee_id) > 5;
+having count(employee_id) > 2;
 
 -- 32
 select country_name, city, count(departments.department_id) as nr_depts
@@ -203,5 +203,3 @@ select city
 from (select department_id from employees where employee_id = 105) dept_emp_105
     inner join departments on dept_emp_105.department_id = departments.department_id
     inner join locations on departments.location_id = locations.location_id;
-
-
