@@ -134,7 +134,7 @@ select job_title, employee_id, (end_date - start_date) as duration_days
 from (select * from job_history where department_id = 20) j_hist_dept_20
     inner join jobs on j_hist_dept_20.job_id = jobs.job_id;
     
--- 25
+-- 25 TODO: check this (year range)
 select job_title, department_name, last_name, hire_date
 from (select last_name, job_id, department_id, hire_date
         from employees
