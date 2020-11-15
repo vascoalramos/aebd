@@ -8,7 +8,7 @@ CREATE TEMPORARY TABLESPACE aebd_taemp TEMPFILE 'aebd_temp_01.dbf' SIZE 50M AUTO
 SELECT * FROM dba_tablespaces;
 
 -- 1. (d) create user
-CREATE USER aebd IDENTIFIED BY "aebd" DEFAULT TABLESPACE aebd_tables QUOTA UNLIMITED ON aebd_tables;
+CREATE USER aebd IDENTIFIED BY "aebd" DEFAULT TABLESPACE aebd_tables TEMPORARY TABLESPACE aebd_temp QUOTA UNLIMITED ON aebd_tables;
 
 -- 1. (e) grant accesses
 GRANT CONNECT, RESOURCE , CREATE VIEW, CREATE SEQUENCE TO aebd;
