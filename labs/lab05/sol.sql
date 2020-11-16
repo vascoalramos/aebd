@@ -153,11 +153,11 @@ select job_title, (max_salary - salary) as salary_diff
 from (select job_id, salary from employees) emps
     inner join jobs on emps.job_id = jobs.job_id;
     
--- 28 TODO: nao percebi...
-select *
-from employees
-    inner join job_history on employees.employee_id = job_history.employee_id
-where salary > 15000;
+-- 28
+select jobs.*
+from (select employee_id from employees where salary > 15000) emps
+    inner join job_history on emps.employee_id = job_history.employee_id
+    inner join jobs on job_history.job_id = jobs.job_id;
 
 -- 29
 select employees.first_name||' '||employees.last_name as name
