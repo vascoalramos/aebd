@@ -1,0 +1,137 @@
+-- 1 (já estando dentro do docker)
+sqlplus sys/Oradoc_db1 as sysdba
+
+-- 2
+sudo su
+cd u02/app/oracle/oradata/ORCL
+mkdir f03db01
+chown oracle:oinstall f03db01
+mkdir f03db02
+chown oracle:oinstall f03db02
+
+-- dentro do docker
+sqlplus sys/Oradoc_db1 as sysdba
+create pluggable database f03db01 
+        admin user db01_admin identified by user_secret 
+        roles = (DBA) 
+        FILE_NAME_CONVERT=('/u02/app/oracle/oradata/ORCL/pdbseed','/u02/app/oracle/oradata/ORCL/f03db01');
+create pluggable database f03db02 
+        admin user db02_admin identified by user_secret 
+        roles = (DBA) 
+        FILE_NAME_CONVERT=('/u02/app/oracle/oradata/ORCL/pdbseed','/u02/app/oracle/oradata/ORCL/f03db02');
+
+select pdb_name, status from cdb_pdbs;
+PDB_NAME                                STATUS
+-----------------------------------     ----------
+F03DB01                                 NEW
+PDB$SEED                                NORMAL
+AEBD1                                   NORMAL
+ORCLPDB1                                NORMAL
+F03DB02                                 NEW
+
+-- 3
+shutdown immediate
+startup
+select name, open_mode from v$pdbs;
+NAME                                    OPEN_MODE
+-----------------------------------     ------------
+PDB$SEED                                READ ONLY
+ORCLPDB1                                READ WRITE
+AEBD1                                   READ WRITE
+F03DB01                                 READ WRITE
+F03DB02                                 READ WRITE
+
+-- 4
+alter pluggable database f03db01 close immediate;
+alter pluggable database f03db01 open restricted;
+connect sys/Oradoc_db1@localhost:1521/f03db01.localdomain as sysdba
+alter pluggable database f03db01 rename global_name to sonho;
+alter pluggable database sonho close immediate;
+alter pluggable database sonho open;
+
+
+alter pluggable database f03db02 close immediate;
+alter pluggable database f03db02 open restricted;
+connect sys/Oradoc_db1@localhost:1521/f03db02.localdomain as sysdba
+alter pluggable database f03db02 rename global_name to sclinico;
+alter pluggable database sclinico close immediate;
+alter pluggable database sclinico open;
+
+select name, restricted from v$pdbs;
+NAME                                    RES
+---------------------------------       ------
+PDB$SEED                                NO
+ORCLPDB1                                NO
+AEBD1                                   NO
+SONHO                                   NO
+SCLINICO                                NO
+
+-- 5 (no oracle container)
+sqlplus sys/Oradoc_db1@localhost:1521/sonho.localdomain as sysdba
+create tablespace f03db01data datafile '/u02/app/oracle/oradata/ORCL/f03db01/f03db01data.dbf' SIZE 100M;
+
+select tablespace_name, con_id from cdb_tablespaces order by con_id;
+TABLESPACE_NAME 		    CON_ID
+------------------------    ----------
+SYSTEM					    5
+SYSAUX					    5
+UNDOTBS1				    5
+TEMP					    5
+F03DB01DATA				    5
+
+select file_name, con_id from cdb_data_files order by con_id;
+FILE_NAME                                               CON_ID
+---------------------------------------------------     ----------
+/u02/app/oracle/oradata/ORCL/f03db01/system01.dbf       5
+/u02/app/oracle/oradata/ORCL/f03db01/sysaux01.dbf       5
+/u02/app/oracle/oradata/ORCL/f03db01/undotbs01.dbf      5
+/u02/app/oracle/oradata/ORCL/f03db01/f03db01data.dbf    5
+
+create temporary tablespace f03db01temp tempfile '/u02/app/oracle/oradata/ORCL/f03db01/temp01.dbf' SIZE 100M;
+
+select tablespace_name, con_id from cdb_tablespaces where contents='TEMPORARY';             
+TABLESPACE_NAME 		    CON_ID
+----------------------      ----------
+TEMP					    5
+F03DB01TEMP				    5
+
+select file_name, con_id from cdb_temp_files;                   
+FILE_NAME                                                                       CON_ID
+----------------------------------------------------------------------------    ----------
+/u02/app/oracle/oradata/ORCL/f03db01/temp012017-03-02_07-54-38-075-AM.dbf       5
+/u02/app/oracle/oradata/ORCL/f03db01/temp01.dbf                                 5
+
+
+sqlplus sys/Oradoc_db1@localhost:1521/sclinico.localdomain as sysdba
+create tablespace f03db02data datafile '/u02/app/oracle/oradata/ORCL/f03db02/f03db02data.dbf' SIZE 100M;
+
+select tablespace_name, con_id from cdb_tablespaces order by con_id;
+TABLESPACE_NAME 		    CON_ID
+-----------------------     ----------
+SYSTEM					    6
+SYSAUX					    6
+UNDOTBS1				    6
+TEMP					    6
+F03DB02DATA				    6
+
+select file_name, con_id from cdb_data_files order by con_id;
+FILE_NAME                                               CON_ID
+---------------------------------------------------     ----------
+/u02/app/oracle/oradata/ORCL/f03db02/system01.dbf       6
+/u02/app/oracle/oradata/ORCL/f03db02/sysaux01.dbf       6
+/u02/app/oracle/oradata/ORCL/f03db02/undotbs01.dbf      6
+/u02/app/oracle/oradata/ORCL/f03db02/f03db02data.dbf    6
+
+create temporary tablespace f03db02temp tempfile '/u02/app/oracle/oradata/ORCL/f03db02/temp02.dbf' SIZE 100M;
+
+select tablespace_name, con_id from cdb_tablespaces where contents='TEMPORARY';             
+TABLESPACE_NAME 		    CON_ID
+------------------------    ---------
+TEMP					    6
+F03DB02TEMP				    6
+
+select file_name, con_id from cdb_temp_files;                   
+FILE_NAME                                                                       CON_ID
+----------------------------------------------------------------------------    ----------
+/u02/app/oracle/oradata/ORCL/f03db02/temp012017-03-02_07-54-38-075-AM.dbf       6
+/u02/app/oracle/oradata/ORCL/f03db02/temp02.dbf                                 6
