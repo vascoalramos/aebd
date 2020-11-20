@@ -90,10 +90,10 @@ FILE_NAME                                               CON_ID
 create temporary tablespace f03db01temp tempfile '/u02/app/oracle/oradata/ORCL/f03db01/temp01.dbf' SIZE 100M;
 
 select tablespace_name, con_id from cdb_tablespaces where contents='TEMPORARY';             
-TABLESPACE_NAME 		    CON_ID
-----------------------      ----------
-TEMP					    5
-F03DB01TEMP				    5
+TABLESPACE_NAME                 CON_ID
+----------------------          ----------
+TEMP			        5
+F03DB01TEMP		        5
 
 select file_name, con_id from cdb_temp_files;                   
 FILE_NAME                                                                       CON_ID
@@ -106,13 +106,13 @@ sqlplus sys/Oradoc_db1@localhost:1521/sclinico.localdomain as sysdba
 create tablespace f03db02data datafile '/u02/app/oracle/oradata/ORCL/f03db02/f03db02data.dbf' SIZE 100M;
 
 select tablespace_name, con_id from cdb_tablespaces order by con_id;
-TABLESPACE_NAME 		    CON_ID
------------------------     ----------
-SYSTEM					    6
-SYSAUX					    6
-UNDOTBS1				    6
-TEMP					    6
-F03DB02DATA				    6
+TABLESPACE_NAME 	        CON_ID
+-----------------------         ----------
+SYSTEM	                        6
+SYSAUX	                        6
+UNDOTBS1                        6
+TEMP	                        6
+F03DB02DATA                     6
 
 select file_name, con_id from cdb_data_files order by con_id;
 FILE_NAME                                               CON_ID
@@ -125,10 +125,10 @@ FILE_NAME                                               CON_ID
 create temporary tablespace f03db02temp tempfile '/u02/app/oracle/oradata/ORCL/f03db02/temp02.dbf' SIZE 100M;
 
 select tablespace_name, con_id from cdb_tablespaces where contents='TEMPORARY';             
-TABLESPACE_NAME 		    CON_ID
-------------------------    ---------
-TEMP					    6
-F03DB02TEMP				    6
+TABLESPACE_NAME                 CON_ID
+------------------------        ---------
+TEMP			        6
+F03DB02TEMP		        6
 
 select file_name, con_id from cdb_temp_files;                   
 FILE_NAME                                                                       CON_ID
