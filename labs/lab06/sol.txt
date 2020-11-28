@@ -141,36 +141,23 @@ FILE_NAME                                                                       
 -- 6
 create user c##vr identified by oracle container=all;
 select username, common, con_id from cdb_users where username like 'C##VR';   
-USERNAME                                        COM	CON_ID
+USERNAME                                        COM	    CON_ID
 ---------------------------------------------   ---     ----------
-C##VR                                           YES	1
+C##VR                                           YES	    1
 C##VR                                           YES     3
 C##VR                                           YES     5
-C##VR                                           YES	6
+C##VR                                           YES	    6
 
 grant create session, resource to c##vr container=all;
 Grant UNLIMITED TABLESPACE to c##vr;
 select grantee, privilege, common, con_id from cdb_sys_privs where privilege='CREATE SESSION' and grantee='C##VR';
-GRANTEE
---------------------------------------------------------------------------------
-PRIVILEGE				 COM	 CON_ID
----------------------------------------- --- ----------
-C##VR
-CREATE SESSION				 YES	      1
-
-C##VR
-CREATE SESSION				 YES	      3
-
-C##VR
-CREATE SESSION				 YES	      5
-
-
-GRANTEE
---------------------------------------------------------------------------------
-PRIVILEGE				 COM	 CON_ID
----------------------------------------- --- ----------
-C##VR
-CREATE SESSION				 YES	      6
+select grantee, privilege, common, con_id from cdb_sys_privs where privilege='CREATE SESSION' and grantee='SNH';
+GRANTEE   PRIVILEGE	            COM	    CON_ID
+--------  --------------        ----    -------
+C##VR     CREATE SESSION				YES	     1
+C##VR     CREATE SESSION				YES	     3
+C##VR     CREATE SESSION				YES	     5
+C##VR     CREATE SESSION				YES	     6
 
 
 
@@ -186,10 +173,11 @@ SNH                                             NO      5
 grant create session, resource to snh;
 grant unlimited tablespace to snh;
 select grantee, privilege, common, con_id from cdb_sys_privs where privilege='CREATE SESSION' and grantee='SNH';
-GRA PRIVILEGE	   COM	   CON_ID
---- -------------- --- ----------
-SNH CREATE SESSION NO		5
-SNH CREATE TABLE   NO		5
+GRANTEE   PRIVILEGE	            COM	    CON_ID
+--------  --------------        ----    -------
+SNH       CREATE SESSION        NO		  5
+SNH       CREATE TABLE          NO		  5
+SNH       UNLIMITED TABLESPACE  NO      6
 connect snh/snh@localhost:1521/sonho.localdomain [SUCCESS]
 
 
@@ -201,13 +189,14 @@ USERNAME                                        COM	CON_ID
 ---------------------------------------------   ---     ----------
 SCL                                             NO      6
 
-grant create session, resource to scl;
-grant unlimited tablespace to scl;
+grant create session, resource, unlimited tablespace to scl;
 select grantee, privilege, common, con_id from cdb_sys_privs where grantee='SCL';
-GRA PRIVILEGE	   COM	   CON_ID
---- -------------- --- ----------
-SCL CREATE SESSION NO		6
-SCL CREATE TABLE   NO		6
+GRANTEE   PRIVILEGE	            COM	    CON_ID
+--------  --------------        ----    -------
+SCL       CREATE SESSION        NO		  6
+SCL       CREATE TABLE          NO		  6
+SCL       UNLIMITED TABLESPACE  NO      6
+
 connect scl/scl@localhost:1521/sclinico.localdomain [SUCCESS]   
 
 
