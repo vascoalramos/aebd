@@ -105,6 +105,8 @@ create or replace PACKAGE BODY swingbench AS
   function storedprocedure4(min_sleep integer, max_sleep integer) return integer_return_array is
     begin
       init_dml_array();
+      select count(1) from dual;
+
       sleep(min_sleep, max_sleep);
       return info_array;
   end storedprocedure4;

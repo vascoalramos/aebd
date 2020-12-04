@@ -8,13 +8,7 @@ import com.dom.benchmarking.swingbench.utilities.RandomGenerator;
 import com.dom.util.Utilities;
 
 import java.io.File;
-
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,28 +19,28 @@ import java.util.logging.Logger;
 
 public class NewCustomerProcess extends OrderEntryProcess {
 
-    private static final Logger     logger = Logger.getLogger(NewCustomerProcess.class.getName());
-    private static final String     COUNTIES_FILE = "data/counties.txt";
-    private static final String     COUNTRIES_FILE = "data/countries.txt";
-    private static final String     FIRST_NAMES_FILE = "data/lowerfirstnames.txt";
-    private static final String     LAST_NAMES_FILE = "data/lowerlastnames.txt";
-    private static final String     NLS_FILE = "data/nls.txt";
-    private static final String     TOWNS_FILE = "data/towns.txt";
-    private static final int        HOUSE_NO_RANGE = 200;
-    private static List<NLSSupport> nlsInfo = new ArrayList<NLSSupport>();
-    private static List<String>     counties = null;
-    private static List<String>     countries = null;
-    private static List<String>     firstNames = null;
-    private static List<String>     lastNames = null;
-    private static List<String>     nlsInfoRaw = null;
-    private static List<String>     towns = null;
-    private static Object           lock = new Object();
-    private PreparedStatement       insPs = null;
-    private PreparedStatement       seqPs = null;
+    private static final Logger logger = Logger.getLogger(NewCustomerProcess.class.getName());
+    private static final String COUNTIES_FILE = "data/counties.txt";
+    private static final String COUNTRIES_FILE = "data/countries.txt";
+    private static final String FIRST_NAMES_FILE = "data/lowerfirstnames.txt";
+    private static final String LAST_NAMES_FILE = "data/lowerlastnames.txt";
+    private static final String NLS_FILE = "data/nls.txt";
+    private static final String TOWNS_FILE = "data/towns.txt";
+    private static final int HOUSE_NO_RANGE = 200;
+    private static List<NLSSupport> nlsInfo = new ArrayList<>();
+    private static List<String> counties = null;
+    private static List<String> countries = null;
+    private static List<String> firstNames = null;
+    private static List<String> lastNames = null;
+    private static List<String> nlsInfoRaw = null;
+    private static List<String> towns = null;
+    private static final Object lock = new Object();
 
-    public NewCustomerProcess() {}
+    public NewCustomerProcess() {
+    }
 
-    public void init(Map params) throws SwingBenchException {
+
+    public void init(Map<String, Object> params) throws SwingBenchException {
         boolean initCompleted = false;
 
         if ((firstNames == null) || !initCompleted) { // load any data you might need (in this case only once)
@@ -54,17 +48,17 @@ public class NewCustomerProcess extends OrderEntryProcess {
             synchronized (lock) {
                 if (firstNames == null) {
 
-                    String value = (String)params.get("SOE_FIRST_NAMES_LOC");
-                    File   firstNamesFile = new File((value == null) ? FIRST_NAMES_FILE : value);
-                    value = (String)params.get("SOE_LAST_NAMES_LOC");
+                    String value = (String) params.get("SOE_FIRST_NAMES_LOC");
+                    File firstNamesFile = new File((value == null) ? FIRST_NAMES_FILE : value);
+                    value = (String) params.get("SOE_LAST_NAMES_LOC");
                     File lastNamesFile = new File((value == null) ? LAST_NAMES_FILE : value);
-                    value = (String)params.get("SOE_NLSDATA_LOC");
+                    value = (String) params.get("SOE_NLSDATA_LOC");
                     File nlsFile = new File((value == null) ? NLS_FILE : value);
-                    value = (String)params.get("SOE_TOWNS_LOC");
+                    value = (String) params.get("SOE_TOWNS_LOC");
                     File townsFile = new File((value == null) ? TOWNS_FILE : value);
-                    value = (String)params.get("SOE_COUNTIES_LOC");
+                    value = (String) params.get("SOE_COUNTIES_LOC");
                     File countiesFile = new File((value == null) ? COUNTIES_FILE : value);
-                    value = (String)params.get("SOE_COUNTRIES_LOC");
+                    value = (String) params.get("SOE_COUNTRIES_LOC");
                     File countriesFile = new File((value == null) ? COUNTRIES_FILE : value);
 
                     try {
@@ -76,7 +70,7 @@ public class NewCustomerProcess extends OrderEntryProcess {
                         countries = Utilities.cacheFile(countriesFile);
 
                         for (String rawData : nlsInfoRaw) {
-                            NLSSupport      nls = new NLSSupport();
+                            NLSSupport nls = new NLSSupport();
                             StringTokenizer st = new StringTokenizer(rawData, ",");
                             nls.language = st.nextToken();
                             nls.territory = st.nextToken();
@@ -98,27 +92,60 @@ public class NewCustomerProcess extends OrderEntryProcess {
         }
     }
 
-    public void execute(Map params) throws SwingBenchException {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
-        long       custID;
-        long       addressID;
-        long       cardID;
-        String     firstName = firstNames.get(RandomGenerator.randomInteger(0, firstNames.size()));
-        String     lastName = lastNames.get(RandomGenerator.randomInteger(0, lastNames.size()));
-        String     town = towns.get(RandomGenerator.randomInteger(0, towns.size()));
-        String     county = counties.get(RandomGenerator.randomInteger(0, counties.size()));
-        String     country = countries.get(RandomGenerator.randomInteger(0, countries.size()));
+    public void execute(Map<String, Object> params) throws SwingBenchException {
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
+        long custID;
+        long addressID;
+        long cardID;
+        String firstName = firstNames.get(RandomGenerator.randomInteger(0, firstNames.size()));
+        String lastName = lastNames.get(RandomGenerator.randomInteger(0, lastNames.size()));
+        String town = towns.get(RandomGenerator.randomInteger(0, towns.size()));
+        String county = counties.get(RandomGenerator.randomInteger(0, counties.size()));
+        String country = countries.get(RandomGenerator.randomInteger(0, countries.size()));
         NLSSupport nls = nlsInfo.get(RandomGenerator.randomInteger(0, nlsInfo.size()));
         initJdbcTask();
 
-        long      executeStart = System.nanoTime();
-        ResultSet rs = null;
+        long executeStart = System.nanoTime();
         try {
+            try (PreparedStatement seqPs = connection.prepareStatement("select customer_seq.nextval, address_seq.nextval, card_details_seq.nextval from dual");
+                 PreparedStatement insPs1 = connection.prepareStatement("insert into customers (customer_id,\n" +
+                         "                       cust_first_name,\n" +
+                         "                       cust_last_name,\n" +
+                         "                       nls_language,\n" +
+                         "                       nls_territory,\n" +
+                         "                       credit_limit,\n" +
+                         "                       cust_email,\n" +
+                         "                       account_mgr_id,\n" +
+                         "                       customer_since,\n" +
+                         "                       customer_class,\n" +
+                         "                       suggestions,\n" +
+                         "                       dob,\n" +
+                         "                       mailshot,\n" +
+                         "                       partner_mailshot,\n" +
+                         "                       preferred_address,\n" +
+                         "                       preferred_card)\n" +
+                         "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                 PreparedStatement insPs2 = connection.prepareStatement("INSERT INTO ADDRESSES (address_id,\n" +
+                         "                       customer_id,\n" +
+                         "                       date_created,\n" +
+                         "                       house_no_or_name,\n" +
+                         "                       street_name,\n" +
+                         "                       town,\n" +
+                         "                       county,\n" +
+                         "                       country,\n" +
+                         "                       post_code,\n" +
+                         "                       zip_code)\n" +
+                         "VALUES (?, ?, TRUNC(SYSDATE, 'MI'), ?, ?, ?, ?, ?, ?, NULL)");
+                 PreparedStatement insPs3 = connection.prepareStatement("INSERT INTO CARD_DETAILS (card_id,\n" +
+                         "                          customer_id,\n" +
+                         "                          card_type,\n" +
+                         "                          card_number,\n" +
+                         "                          expiry_date,\n" +
+                         "                          is_valid,\n" +
+                         "                          security_code)\n" +
+                         "VALUES (?, ?, ?, ?, trunc(SYSDATE + ?), ?, ?)");
+                 ResultSet rs = seqPs.executeQuery()) {
 
-
-            try {
-                seqPs = connection.prepareStatement("select customer_seq.nextval, address_seq.nextval, card_details_seq.nextval from dual");
-                rs = seqPs.executeQuery();
                 rs.next();
                 custID = rs.getLong(1);
                 addressID = rs.getLong(2);
@@ -127,85 +154,51 @@ public class NewCustomerProcess extends OrderEntryProcess {
                 addSelectStatements(1);
                 thinkSleep();
 
-                insPs =
-                    connection.prepareStatement("insert into customers (customer_id ,cust_first_name ,cust_last_name, " + "nls_language ,nls_territory ,credit_limit ,cust_email ,account_mgr_id, " +
-                                                "customer_since, customer_class, suggestions, dob, mailshot, " + "partner_mailshot, preferred_address, preferred_card) " +
-                                                "values (? , ? , ? , ? , ? , ? ,? , ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+                Date dob = new Date(System.currentTimeMillis() - (RandomGenerator.randomLong(18, 65) * 31556952000L));
+                Date custSince = new Date(System.currentTimeMillis() - (RandomGenerator.randomLong(1, 4) * 31556952000L));
 
-                Date dob = new Date(System.currentTimeMillis() - (RandomGenerator.randomLong(18, 65) * 31556952000l));
-                Date custSince = new Date(System.currentTimeMillis() - (RandomGenerator.randomLong(1, 4) * 31556952000l));
+                insPs1.setLong(1, custID);
+                insPs1.setString(2, firstName);
+                insPs1.setString(3, lastName);
+                insPs1.setString(4, nls.language);
+                insPs1.setString(5, nls.territory);
+                insPs1.setInt(6, RandomGenerator.randomInteger(MIN_CREDITLIMIT, MAX_CREDITLIMIT));
+                insPs1.setString(7, firstName + "." + lastName + "@" + "oracle.com");
+                insPs1.setInt(8, RandomGenerator.randomInteger(MIN_SALESID, MAX_SALESID));
+                insPs1.setDate(9, custSince);
+                insPs1.setString(10, "Ocasional");
+                insPs1.setString(11, "Music");
+                insPs1.setDate(12, dob);
+                insPs1.setString(13, "Y");
+                insPs1.setString(14, "N");
+                insPs1.setLong(15, addressID);
+                insPs1.setLong(16, custID);
 
-                insPs.setLong(1, custID);
-                insPs.setString(2, firstName);
-                insPs.setString(3, lastName);
-                insPs.setString(4, nls.language);
-                insPs.setString(5, nls.territory);
-                insPs.setInt(6, RandomGenerator.randomInteger(MIN_CREDITLIMIT, MAX_CREDITLIMIT));
-                insPs.setString(7, firstName + "." + lastName + "@" + "oracle.com");
-                insPs.setInt(8, RandomGenerator.randomInteger(MIN_SALESID, MAX_SALESID));
-                insPs.setDate(9, custSince);
-                insPs.setString(10, "Ocasional");
-                insPs.setString(11, "Music");
-                insPs.setDate(12, dob);
-                insPs.setString(13, "Y");
-                insPs.setString(14, "N");
-                insPs.setLong(15, addressID);
-                insPs.setLong(16, custID);
-
-                insPs.execute();
-                insPs.close();
+                insPs1.execute();
                 addInsertStatements(1);
 
-                insPs = connection.prepareStatement(
-                    "INSERT INTO ADDRESSES     \n" +
-                    "        (     \n" +
-                    "          address_id,     \n" +
-                    "          customer_id,     \n" +
-                    "          date_created,     \n" +
-                    "          house_no_or_name,     \n" +
-                    "          street_name,     \n" +
-                    "          town,     \n" +
-                    "          county,     \n" +
-                    "          country,     \n" +
-                    "          post_code,     \n" +
-                    "          zip_code     \n" +
-                    "        )     \n" +
-                    "        VALUES     \n" +
-                    "        (?, ? ,TRUNC(SYSDATE,'MI'), ?, ? , ?, ?, ? , ?, NULL)");
-                insPs.setLong(1, addressID);
-                insPs.setLong(2, custID);
-                insPs.setInt(3, RandomGenerator.randomInteger(1, HOUSE_NO_RANGE));
-                insPs.setString(4, "Street Name");
-                insPs.setString(5, town);
-                insPs.setString(6, county);
-                insPs.setString(7, country);
-                insPs.setString(8, "Postcode");
-                insPs.execute();
-                insPs.close();
+                insPs2.setLong(1, addressID);
+                insPs2.setLong(2, custID);
+                insPs2.setInt(3, RandomGenerator.randomInteger(1, HOUSE_NO_RANGE));
+                insPs2.setString(4, "Street Name");
+                insPs2.setString(5, town);
+                insPs2.setString(6, county);
+                insPs2.setString(7, country);
+                insPs2.setString(8, "Postcode");
+                insPs2.execute();
+                insPs2.close();
                 addInsertStatements(1);
 
-                insPs = connection.prepareStatement(
-                    " INSERT INTO CARD_DETAILS\n" +
-                    "        (\n" +
-                    "          CARD_ID,\n" +
-                    "          CUSTOMER_ID,\n" +
-                    "          CARD_TYPE,\n" +
-                    "          CARD_NUMBER,\n" +
-                    "          EXPIRY_DATE,\n" +
-                    "          IS_VALID,\n" +
-                    "          SECURITY_CODE\n" +
-                    "        )\n" +
-                    "        VALUES\n" +
-                    "        (?, ?, ?, ?, trunc(SYSDATE + ?), ?, ?)");
-                insPs.setLong(1, cardID);
-                insPs.setLong(2, custID);
-                insPs.setString(3, "Visa (Debit)");
-                insPs.setLong(4, RandomGenerator.randomLong(1111111111l, 9999999999l));
-                insPs.setInt(5, RandomGenerator.randomInteger(365, 1460));
-                insPs.setString(6, "Y");
-                insPs.setInt(7, RandomGenerator.randomInteger(1111, 9999));
-                insPs.execute();
-                insPs.close();
+
+                insPs3.setLong(1, cardID);
+                insPs3.setLong(2, custID);
+                insPs3.setString(3, "Visa (Debit)");
+                insPs3.setLong(4, RandomGenerator.randomLong(1111111111L, 9999999999L));
+                insPs3.setInt(5, RandomGenerator.randomInteger(365, 1460));
+                insPs3.setString(6, "Y");
+                insPs3.setInt(7, RandomGenerator.randomInteger(1111, 9999));
+                insPs3.execute();
+                insPs3.close();
                 addInsertStatements(1);
 
                 connection.commit();
@@ -218,14 +211,9 @@ public class NewCustomerProcess extends OrderEntryProcess {
                 addSelectStatements(1);
 
             } catch (SQLException se) {
+                logger.log(Level.FINE, String.format("Exception : %s", se.getMessage()));
+                logger.log(Level.FINEST, "SQLException thrown : %s", se);
                 throw new SwingBenchException(se);
-            } finally {
-                try {
-                    rs.close();
-                    seqPs.close();
-                    insPs.close();
-                } catch (Exception ex) {}
-
             }
 
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), true, getInfoArray()));
@@ -234,15 +222,15 @@ public class NewCustomerProcess extends OrderEntryProcess {
                 addRollbackStatements(1);
                 connection.rollback();
             } catch (SQLException er) {
-                logger.log(Level.INFO, "Unable to rollback transaction");
+                logger.log(Level.FINE, "Unable to rollback transaction");
             }
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), false, getInfoArray()));
-
             throw new SwingBenchException(sbe);
         }
     }
 
-    public void close() {}
+    public void close() {
+    }
 
     private class NLSSupport {
 

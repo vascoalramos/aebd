@@ -19,18 +19,21 @@ import java.util.logging.Logger;
 public class ProcessOrders extends OrderEntryProcess {
 
     private static final Logger logger = Logger.getLogger(ProcessOrders.class.getName());
-    private PreparedStatement   orderPs3 = null;
-    private PreparedStatement   updoPs = null;
-    private int                 orderID;
+    private PreparedStatement orderPs3 = null;
+    private PreparedStatement updoPs = null;
+    private int orderID;
 
-    public ProcessOrders() {}
+    public ProcessOrders() {
+    }
 
-    public void close() {}
+    public void close() {
+    }
 
-    public void init(Map parameters) {}
+    public void init(Map parameters) {
+    }
 
     public void execute(Map params) throws SwingBenchException {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         ResultSet rs = null;
 
@@ -39,37 +42,37 @@ public class ProcessOrders extends OrderEntryProcess {
         try {
             try {
                 orderPs3 = connection.prepareStatement(
-                    "WITH need_to_process AS            \n" +
-                    "                          (SELECT order_id,            \n" +
-                    "                            /* we're only looking for unprocessed orders */            \n" +
-                    "                            customer_id            \n" +
-                    "                          FROM orders            \n" +
-                    "                          WHERE order_status <= 4            \n" +
-                    "                          AND rownum         <  10            \n" +
-                    "                          )            \n" +
-                    "                        SELECT o.order_id,               \n" +
-                    "                          oi.line_item_id,               \n" +
-                    "                          oi.product_id,               \n" +
-                    "                          oi.unit_price,               \n" +
-                    "                          oi.quantity,               \n" +
-                    "                          o.order_mode,               \n" +
-                    "                          o.order_status,               \n" +
-                    "                          o.order_total,               \n" +
-                    "                          o.sales_rep_id,               \n" +
-                    "                          o.promotion_id,               \n" +
-                    "                          c.customer_id,               \n" +
-                    "                          c.cust_first_name,               \n" +
-                    "                          c.cust_last_name,               \n" +
-                    "                          c.credit_limit,               \n" +
-                    "                          c.cust_email,               \n" +
-                    "                          o.order_date            \n" +
-                    "                        FROM orders o,            \n" +
-                    "                          need_to_process ntp,            \n" +
-                    "                          customers c,            \n" +
-                    "                          order_items oi            \n" +
-                    "                        WHERE ntp.order_id = o.order_id            \n" +
-                    "                        AND c.customer_id  = o.customer_id            \n" +
-                    "                        and oi.order_id (+) = o.order_id");
+                        "WITH need_to_process AS            \n" +
+                                "                          (SELECT order_id,            \n" +
+                                "                            /* we're only looking for unprocessed orders */            \n" +
+                                "                            customer_id            \n" +
+                                "                          FROM orders            \n" +
+                                "                          WHERE order_status <= 4            \n" +
+                                "                          AND rownum         <  10            \n" +
+                                "                          )            \n" +
+                                "                        SELECT o.order_id,               \n" +
+                                "                          oi.line_item_id,               \n" +
+                                "                          oi.product_id,               \n" +
+                                "                          oi.unit_price,               \n" +
+                                "                          oi.quantity,               \n" +
+                                "                          o.order_mode,               \n" +
+                                "                          o.order_status,               \n" +
+                                "                          o.order_total,               \n" +
+                                "                          o.sales_rep_id,               \n" +
+                                "                          o.promotion_id,               \n" +
+                                "                          c.customer_id,               \n" +
+                                "                          c.cust_first_name,               \n" +
+                                "                          c.cust_last_name,               \n" +
+                                "                          c.credit_limit,               \n" +
+                                "                          c.cust_email,               \n" +
+                                "                          o.order_date            \n" +
+                                "                        FROM orders o,            \n" +
+                                "                          need_to_process ntp,            \n" +
+                                "                          customers c,            \n" +
+                                "                          order_items oi            \n" +
+                                "                        WHERE ntp.order_id = o.order_id            \n" +
+                                "                        AND c.customer_id  = o.customer_id            \n" +
+                                "                        and oi.order_id (+) = o.order_id");
 
                 rs = orderPs3.executeQuery();
                 rs.next();
@@ -84,7 +87,9 @@ public class ProcessOrders extends OrderEntryProcess {
                 connection.commit();
                 addCommitStatements(1);
             } catch (SQLException se) {
-                throw new SwingBenchException(se.getMessage());
+                logger.log(Level.FINE, String.format("Exception : ", se.getMessage()));
+                logger.log(Level.FINEST, "SQLException thrown : ", se);
+                throw new SwingBenchException(se);
             } finally {
                 hardClose(rs);
                 hardClose(orderPs3);
@@ -97,7 +102,7 @@ public class ProcessOrders extends OrderEntryProcess {
                 addRollbackStatements(1);
                 connection.rollback();
             } catch (SQLException er) {
-                logger.log(Level.INFO, "Unable to rollback transaction");
+                logger.log(Level.FINE, "Unable to rollback transaction");
             }
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), false, getInfoArray()));
 

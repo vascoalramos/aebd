@@ -30,10 +30,10 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
     private static List<String> firstNames = null;
     private static List<String> lastNames = null;
     private static List<String> towns = null;
-    private static Object       lock = new Object();
-    private PreparedStatement   addSeqPs = null;
-    private PreparedStatement   insAddPs = null;
-    private PreparedStatement   updAddPs = null;
+    private static Object lock = new Object();
+    private PreparedStatement addSeqPs = null;
+    private PreparedStatement insAddPs = null;
+    private PreparedStatement updAddPs = null;
     private static final Logger logger = Logger.getLogger(UpdateCustomerDetails.class.getName());
 
     public UpdateCustomerDetails() {
@@ -42,24 +42,24 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
 
     @Override
     public void init(Map<String, Object> params) throws SwingBenchException {
-        boolean    initCompleted = false;
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        boolean initCompleted = false;
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
 
         if ((firstNames == null) || !initCompleted) { // load any data you might need (in this case only once)
 
             synchronized (lock) {
                 if (firstNames == null) {
 
-                    String value = (String)params.get("SOE_FIRST_NAMES_LOC");
-                    File   firstNamesFile = new File((value == null) ? FIRST_NAMES_FILE : value);
-                    value = (String)params.get("SOE_LAST_NAMES_LOC");
+                    String value = (String) params.get("SOE_FIRST_NAMES_LOC");
+                    File firstNamesFile = new File((value == null) ? FIRST_NAMES_FILE : value);
+                    value = (String) params.get("SOE_LAST_NAMES_LOC");
                     File lastNamesFile = new File((value == null) ? LAST_NAMES_FILE : value);
 
-                    value = (String)params.get("SOE_TOWNS_LOC");
+                    value = (String) params.get("SOE_TOWNS_LOC");
                     File townsFile = new File((value == null) ? TOWNS_FILE : value);
-                    value = (String)params.get("SOE_COUNTIES_LOC");
+                    value = (String) params.get("SOE_COUNTIES_LOC");
                     File countiesFile = new File((value == null) ? COUNTIES_FILE : value);
-                    value = (String)params.get("SOE_COUNTRIES_LOC");
+                    value = (String) params.get("SOE_COUNTRIES_LOC");
                     File countriesFile = new File((value == null) ? COUNTRIES_FILE : value);
 
                     try {
@@ -88,7 +88,7 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
 
     @Override
     public void execute(Map<String, Object> params) throws SwingBenchException {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         ResultSet rs = null;
 
@@ -97,7 +97,7 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
         String town = towns.get(RandomGenerator.randomInteger(0, towns.size()));
         String county = counties.get(RandomGenerator.randomInteger(0, counties.size()));
         String country = countries.get(RandomGenerator.randomInteger(0, countries.size()));
-        long   executeStart = System.nanoTime();
+        long executeStart = System.nanoTime();
 
 
         try {
@@ -112,20 +112,20 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
                     rs.next();
                     Long addId = rs.getLong(1);
                     insAddPs = connection.prepareStatement(
-                        "INSERT INTO ADDRESSES    \n" +
-                        "        ( address_id,    \n" +
-                        "          customer_id,    \n" +
-                        "          date_created,    \n" +
-                        "          house_no_or_name,    \n" +
-                        "          street_name,    \n" +
-                        "          town,    \n" +
-                        "          county,    \n" +
-                        "          country,    \n" +
-                        "          post_code,    \n" +
-                        "          zip_code    \n" +
-                        "        )    \n" +
-                        "        VALUES    \n" +
-                        "        ( ?, ?, TRUNC(SYSDATE,'MI'), ?, 'Street Name', ?, ?, ?, 'Postcode', NULL)");
+                            "INSERT INTO ADDRESSES    \n" +
+                                    "        ( address_id,    \n" +
+                                    "          customer_id,    \n" +
+                                    "          date_created,    \n" +
+                                    "          house_no_or_name,    \n" +
+                                    "          street_name,    \n" +
+                                    "          town,    \n" +
+                                    "          county,    \n" +
+                                    "          country,    \n" +
+                                    "          post_code,    \n" +
+                                    "          zip_code    \n" +
+                                    "        )    \n" +
+                                    "        VALUES    \n" +
+                                    "        ( ?, ?, TRUNC(SYSDATE,'MI'), ?, 'Street Name', ?, ?, ?, 'Postcode', NULL)");
                     insAddPs.setLong(1, addId);
                     insAddPs.setLong(2, custIDLists.get(0));
                     insAddPs.setInt(3, RandomGenerator.randomInteger(1, HOUSE_NO_RANGE));
@@ -145,8 +145,9 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
                 }
 
             } catch (SQLException se) {
-                logger.log(Level.SEVERE, "Exception : ", se);
-                throw new SwingBenchException(se.getMessage());
+                logger.log(Level.FINE, String.format("Exception : ", se.getMessage()));
+                logger.log(Level.FINEST, "SQLException thrown : ", se);
+                throw new SwingBenchException(se);
             } finally {
                 hardClose(rs);
                 hardClose(addSeqPs);
@@ -160,7 +161,7 @@ public class UpdateCustomerDetails extends OrderEntryProcess {
                 addRollbackStatements(1);
                 connection.rollback();
             } catch (SQLException er) {
-                logger.log(Level.INFO, "Unable to rollback transaction");
+                logger.log(Level.FINE, "Unable to rollback transaction");
             }
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), false, getInfoArray()));
             throw new SwingBenchException(sbe.getMessage());

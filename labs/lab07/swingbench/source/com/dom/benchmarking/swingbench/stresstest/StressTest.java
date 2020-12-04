@@ -36,19 +36,20 @@ public abstract class StressTest extends DatabaseTransaction {
             }
             if (!initRunning && !initCompleted) {
                 initRunning = true;
-                Connection connection = (Connection)parameters.get(SwingBenchTask.JDBC_CONNECTION);
+                Connection connection = (Connection) parameters.get(SwingBenchTask.JDBC_CONNECTION);
                 Statement st = connection.createStatement();
                 try {
                     st.execute("drop table stressTestTable");
                 } catch (SQLException ex) { // ignore the exception
                 }
-                st.execute("create table stressTestTable(\n" +
-                        "id integer not null primary key,\n" +
-                        "aint integer,\n" +
-                        "afloat float,\n" +
-                        "asmallvarchar varchar(10),\n" +
-                        "abigvarchar varchar(1000),\n" +
-                        "adate date)");
+                st.execute(
+                        "create table stressTestTable(\n" +
+                                "id integer not null primary key,\n" +
+                                "aint integer,\n" +
+                                "afloat float,\n" +
+                                "asmallvarchar varchar(10),\n" +
+                                "abigvarchar varchar(1000),\n" +
+                                "adate date)");
                 st.execute("create index stbtidx on stressTestTable(asmallvarchar)");
                 initRunning = false;
                 initCompleted = true;

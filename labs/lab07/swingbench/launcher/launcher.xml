@@ -105,6 +105,26 @@
             <jvmargset refid="datagenerator.jvm.args"/>
         </launch>
     </target>
+    <target name="tpcdswizard">
+        <mkdir dir="${log.dir}" />
+        <launch classname="com.dom.benchmarking.swingbench.wizards.Wizard" usesystemin="false">
+            <classpath refid="base.class.path"/>
+            <syspropertyset>
+                <sysproperty key="log.dir" file="${log.dir}"/>
+            </syspropertyset>
+            <jvmargset refid="datagenerator.jvm.args"/>
+        </launch>
+    </target>
+    <target name="tpcewizard">
+        <mkdir dir="${log.dir}" />
+        <launch classname="com.dom.benchmarking.swingbench.wizards.Wizard" usesystemin="false">
+            <classpath refid="base.class.path"/>
+            <syspropertyset>
+                <sysproperty key="log.dir" file="${log.dir}"/>
+            </syspropertyset>
+            <jvmargset refid="datagenerator.jvm.args"/>
+        </launch>
+    </target>
     <target name="bmcompare">
         <mkdir dir="${log.dir}" />
         <launch classname="com.dom.benchmarking.swingbench.BMCompare" usesystemin="false">
@@ -139,6 +159,20 @@
             <syspropertyset>
                 <sysproperty key="log.dir" file="${log.dir}"/>
             </syspropertyset>
+        </launch>
+    </target>
+    <target name="SQLWorkloadEditor">
+        <mkdir dir="${log.dir}" />
+        <launch classname="com.dom.benchmarking.swingbench.sqleditor.SQLWorkloadEditor"
+                usesystemin="false"
+                minimizedWindowTitle="SQLWorkloadEditor"
+                displayMinimizedWindow="true"
+                disposeMinimizedWindow="true">
+            <classpath refid="base.class.path"/>
+            <syspropertyset>
+                <sysproperty key="log.dir" file="${log.dir}"/>
+            </syspropertyset>
+            <jvmargset refid="base.jvm.args"/>
         </launch>
     </target>
 </project>

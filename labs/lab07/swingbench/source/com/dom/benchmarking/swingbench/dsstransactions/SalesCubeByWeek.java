@@ -27,7 +27,7 @@ public class SalesCubeByWeek extends SalesHistory {
             if (!isDataCached()) {
                 synchronized (lock) {
                     if (!isDataCached()) {
-                        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+                        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
                         cacheData(connection);
                     }
                 }
@@ -39,24 +39,24 @@ public class SalesCubeByWeek extends SalesHistory {
     }
 
     public void execute(Map param) throws SwingBenchException {
-        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         long executeStart = System.nanoTime();
         try {
             OracleUtilities.setModuleInfo(connection, "SalesCubeByWeek");
             Statement st = connection.createStatement();
-            String sql = "SELECT channel_desc, calendar_week_number, countries.country_iso_code,\n" +
-                "      TO_CHAR(SUM(amount_sold), '9,999,999,999') SALES$\n" +
-                "FROM sales, customers, times, channels, countries\n" +
-                "WHERE sales.time_id=times.time_id AND sales.cust_id=customers.cust_id AND\n" +
-                "  sales.channel_id= channels.channel_id\n" +
-                " AND customers.country_id = countries.country_id\n" +
-                " AND channels.channel_desc IN\n" +
-                "  (" + getRandomStringData(1, 3, getChannels(), "'") + ")" + 
-                "  AND times.calendar_year = " + getRandomStringData(1, 2, getYears(), "'") + " \n" +
-                "  AND times.calendar_week_number IN (" + getRandomStringData(2, 4, getWeeks(), "'") + ") \n" +
-                "  AND countries.country_iso_code IN (" + getRandomStringData(1, 4, getCountries(), "'") + ")\n" +
-                "GROUP BY CUBE(channel_desc, calendar_week_number, countries.country_iso_code)";
+            String sql =
+                    "SELECT channel_desc, calendar_week_number, countries.country_iso_code,\n" +
+                            "      TO_CHAR(SUM(amount_sold), '9,999,999,999') SALES$\n" +
+                            "FROM sales, customers, times, channels, countries\n" +
+                            "WHERE sales.time_id=times.time_id AND sales.cust_id=customers.cust_id AND\n" +
+                            "  sales.channel_id= channels.channel_id\n" +
+                            " AND customers.country_id = countries.country_id\n" +
+                            " AND channels.channel_desc IN\n" +
+                            "  (" + getRandomStringData(1, 3, getChannels(), "'") + ")" + "  AND times.calendar_year = " + getRandomStringData(1, 2, getYears(), "'") + " \n" +
+                            "  AND times.calendar_week_number IN (" + getRandomStringData(2, 4, getWeeks(), "'") + ") \n" +
+                            "  AND countries.country_iso_code IN (" + getRandomStringData(1, 4, getCountries(), "'") + ")\n" +
+                            "GROUP BY CUBE(channel_desc, calendar_week_number, countries.country_iso_code)";
             logger.finest(sql);
             ResultSet rs = st.executeQuery(sql);
             rs.next();

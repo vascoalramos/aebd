@@ -28,7 +28,7 @@ public class SalesByCountryForGivenYear extends SalesHistory {
             if (!isDataCached()) {
                 synchronized (lock) {
                     if (!isDataCached()) {
-                        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+                        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
                         cacheData(connection);
                     }
                 }
@@ -40,28 +40,29 @@ public class SalesByCountryForGivenYear extends SalesHistory {
     }
 
     public void execute(Map param) throws SwingBenchException {
-        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         long executeStart = System.nanoTime();
         try {
             OracleUtilities.setModuleInfo(connection, "SalesByCountryForGivenYear");
             Statement st = connection.createStatement();
-            String sql = "SELECT SUM(s.quantity_sold* p.prod_list_price),\n" +
-                "  co.country_name,\n" +
-                "  t.calendar_year\n" +
-                "FROM sales s,\n" +
-                "  customers cu,\n" +
-                "  countries co,\n" +
-                "  products p,\n" +
-                "  times t\n" +
-                "WHERE s.cust_id   = cu.cust_id\n" +
-                "and s.prod_id = p.prod_id\n" +
-                "AND cu.country_id = co.country_id\n" +
-                "AND s.time_id     = t.time_id\n" +
-                "and t.calendar_year = " + getRandomStringData(1, 2, getYears(), null) + "\n" +
-                " GROUP BY co.country_name,\n" +
-                "  t.calendar_year\n" +
-                "ORDER BY t.calendar_year";
+            String sql =
+                    "SELECT SUM(s.quantity_sold* p.prod_list_price),\n" +
+                            "  co.country_name,\n" +
+                            "  t.calendar_year\n" +
+                            "FROM sales s,\n" +
+                            "  customers cu,\n" +
+                            "  countries co,\n" +
+                            "  products p,\n" +
+                            "  times t\n" +
+                            "WHERE s.cust_id   = cu.cust_id\n" +
+                            "and s.prod_id = p.prod_id\n" +
+                            "AND cu.country_id = co.country_id\n" +
+                            "AND s.time_id     = t.time_id\n" +
+                            "and t.calendar_year = " + getRandomStringData(1, 2, getYears(), null) + "\n" +
+                            " GROUP BY co.country_name,\n" +
+                            "  t.calendar_year\n" +
+                            "ORDER BY t.calendar_year";
             logger.finest(sql);
             ResultSet rs = st.executeQuery(sql);
             rs.next();

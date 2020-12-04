@@ -26,10 +26,10 @@ public class BrowseAndUpdateOrders extends OrderEntryProcess {
     public void close() {
     }
 
-    public void init(Map params) {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
-        Boolean commitClientSide = Boolean.parseBoolean((String)params.get(SwingBenchTask.COMMIT_CLIENT_SIDE));
+    public void init(Map<String, Object> params) {
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         try {
+            this.parseCommitClientSide(params);
             this.setCommitClientSide(connection, commitClientSide);
             this.getMaxandMinCustID(connection, params);
         } catch (SQLException se) {
@@ -38,48 +38,38 @@ public class BrowseAndUpdateOrders extends OrderEntryProcess {
     }
 
     public void execute(Map params) throws SwingBenchException {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
 
         int queryTimeOut = 60;
 
         if (params.get(SwingBenchTask.QUERY_TIMEOUT) != null) {
-            queryTimeOut = ((Integer)(params.get(SwingBenchTask.QUERY_TIMEOUT))).intValue();
+            queryTimeOut = (Integer) (params.get(SwingBenchTask.QUERY_TIMEOUT));
         }
 
         long executeStart = System.nanoTime();
-        int[] dmlArray = null;
-        boolean sucessfulTransaction = true;
-
+        initJdbcTask();
         try {
-
-            long start = System.nanoTime();
-            CallableStatement cs = null;
-            try {
-
-                cs = connection.prepareCall("{? = call orderentry.browseandupdateorders(?,?,?)}");
+            try (CallableStatement cs = connection.prepareCall("{? = call orderentry.browseandupdateorders(?,?,?)}")) {
                 cs.registerOutParameter(1, OracleTypes.VARCHAR);
                 cs.setLong(2, RandomGenerator.randomLong(MIN_CUSTID, MAX_CUSTID));
-                cs.setInt(3, (int)this.getMinSleepTime());
-                cs.setInt(4, (int)this.getMaxSleepTime());
+                cs.setInt(3, (int) this.getMinSleepTime());
+                cs.setInt(4, (int) this.getMaxSleepTime());
                 cs.setQueryTimeout(queryTimeOut);
                 cs.executeUpdate();
-                dmlArray = parseInfoArray(cs.getString(1));
-                if (dmlArray[ROLLBACK_STATEMENTS] != 0)
-                    sucessfulTransaction = false;
-                cs.close();
+                parseInfoArray(cs.getString(1));
                 this.commit(connection);
-            } catch (SQLException se) {
-                //throw new SwingBenchException(se.getMessage());
+            } catch (Exception se) {
                 throw new SwingBenchException(se);
-            } catch (Exception e) {
-                throw new SwingBenchException(e.getMessage());
             }
-
-            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), sucessfulTransaction, dmlArray));
+            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), true, getInfoArray()));
         } catch (SwingBenchException ex) {
-            sucessfulTransaction = false;
-            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), sucessfulTransaction, dmlArray));
-            throw new SwingBenchException(ex);
+            addRollbackStatements(1);
+            try {
+                connection.rollback();
+            } catch (SQLException ignored) {
+            }
+            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), false, getInfoArray()));
+            throw ex;
         }
     }
 }

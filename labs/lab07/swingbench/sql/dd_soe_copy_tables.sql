@@ -98,5 +98,12 @@ CREATE TABLE ORDERS_C
     ) TABLESPACE &tablespace &usecompression initrans 32
     STORAGE (INITIAL 64M NEXT 64M);
 
+CREATE TABLE INVENTORIES_C
+   ( product_id             NUMBER(6)
+   , warehouse_id           NUMBER(6)
+   , quantity_on_hand       NUMBER(8)
+   ) TABLESPACE &tablespace &usecompression initrans 32
+   STORAGE (INITIAL 64M NEXT 64M);
+
 
 -- End Script;

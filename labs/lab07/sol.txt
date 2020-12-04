@@ -1,0 +1,12 @@
+-- 1
+Up time: 23 mins
+Type: Single instance (ORCLCDB)
+Version: 12.2.0.1.0 Enterprise Edition
+Instance name: ORCLCDB
+Container name: ORCLPDB1
+Platform name: Linux x86 64-bit
+
+-- 2 
+Não
+
+-- 3

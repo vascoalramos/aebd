@@ -13,7 +13,10 @@ DROP TABLE ORDER_ITEMS_C PURGE;
 
 DROP TABLE ORDERS_C PURGE;
 
+DROP TABLE INVENTORIES_C PURGE;
+
 -- End Suppress Warnings
+
 CREATE TABLE CUSTOMERS_C
   ( customer_id           NUMBER(12),
     cust_first_name       VARCHAR2(40),
@@ -106,6 +109,15 @@ CREATE TABLE ORDERS_C
     PARTITION BY HASH(order_id)
     PARTITIONS &partitioncount
     STORAGE (INITIAL 8M NEXT 8M);
+
+CREATE TABLE INVENTORIES_C
+   ( product_id         NUMBER(6)
+   , warehouse_id       NUMBER(6)
+   , quantity_on_hand   NUMBER(8)
+   ) TABLESPACE &tablespace &usecompression initrans 32
+   STORAGE (INITIAL 8M NEXT 8M);
+
+commit;
 
 
 -- End Script;

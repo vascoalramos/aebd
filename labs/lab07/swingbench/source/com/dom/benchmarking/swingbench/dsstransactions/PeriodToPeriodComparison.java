@@ -28,7 +28,7 @@ public class PeriodToPeriodComparison extends SalesHistory {
             if (!isDataCached()) {
                 synchronized (lock) {
                     if (!isDataCached()) {
-                        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+                        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
                         cacheData(connection);
                     }
                 }
@@ -40,70 +40,71 @@ public class PeriodToPeriodComparison extends SalesHistory {
     }
 
     public void execute(Map param) throws SwingBenchException {
-        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         long executeStart = System.nanoTime();
         try {
             OracleUtilities.setModuleInfo(connection, "PeriodToPeriodComparison");
             Statement st = connection.createStatement();
             String yearRange = getRandomStringData(2, 3, getYears(), null);
-            String lastYear = yearRange.substring(yearRange.indexOf(",")+1,yearRange.length());
+            String lastYear = yearRange.substring(yearRange.indexOf(",") + 1, yearRange.length());
             int minWeek = RandomGenerator.randomInteger(1, 48);
             int maxWeek = minWeek + 4;
             String selectedProduct = getRandomStringData(1, 2, getProducts(), "'");
 
-            String sql = "WITH v AS\n" + 
-            "  (SELECT p.Prod_Name Product_Name,\n" + 
-            "    t.Calendar_Year YEAR,\n" + 
-            "    t.Calendar_Week_Number Week,\n" + 
-            "    SUM(Amount_Sold) Sales\n" + 
-            "  FROM Sales s,\n" + 
-            "    Times t,\n" + 
-            "    Products p\n" + 
-            "  WHERE s.Time_id      = t.Time_id\n" + 
-            "  AND s.Prod_id        = p.Prod_id\n" + 
-            "  AND p.Prod_name     IN (" + selectedProduct + ")\n" + 
-            "  and T.CALENDAR_YEAR IN (" + yearRange  + ")\n" + 
-            "  AND t.Calendar_Week_Number BETWEEN " +  minWeek +  " AND  " +  maxWeek + "\n" + 
-            "  GROUP BY p.Prod_Name,\n" + 
-            "    t.Calendar_Year,\n" + 
-            "    t.Calendar_Week_Number\n" + 
-            "  )\n" + 
-            "SELECT Product_Name Prod,\n" + 
-            "  YEAR,\n" + 
-            "  Week,\n" + 
-            "  Sales,\n" + 
-            "  Weekly_ytd_sales,\n" + 
-            "  Weekly_ytd_sales_prior_year\n" + 
-            "FROM\n" + 
-            "  (SELECT --Start of year_over_year sales\n" + 
-            "    Product_Name,\n" + 
-            "    YEAR,\n" + 
-            "    Week,\n" + 
-            "    Sales,\n" + 
-            "    Weekly_ytd_sales,\n" + 
-            "    LAG(Weekly_ytd_sales, 1) OVER (PARTITION BY Product_Name, Week ORDER BY YEAR) Weekly_ytd_sales_prior_year\n" + 
-            "  FROM\n" + 
-            "    (SELECT -- Start of dense_sales\n" + 
-            "      v.Product_Name Product_Name,\n" + 
-            "      t.Year YEAR,\n" + 
-            "      t.Week Week,\n" + 
-            "      NVL(v.Sales,0) Sales,\n" + 
-            "      SUM(NVL(v.Sales,0)) OVER (PARTITION BY v.Product_Name, t.Year ORDER BY t.week) weekly_ytd_sales\n" + 
-            "    FROM v PARTITION BY (v.Product_Name)\n" + 
-            "    RIGHT OUTER JOIN\n" + 
-            "      (SELECT DISTINCT Calendar_Week_Number Week,\n" + 
-            "        Calendar_Year YEAR\n" + 
-            "      FROM Times\n" + 
-            "      WHERE Calendar_Year IN (" + yearRange  + ")\n" + 
-            "      ) t\n" + 
-            "    ON (v.week = t.week\n" + 
-            "    AND v.Year = t.Year)\n" + 
-            "    ) dense_sales\n" + 
-            "  ) year_over_year_sales\n" + 
-            "where year = " + lastYear  + "\n" + 
-            "AND WEEK BETWEEN " +  minWeek +  " AND  " +  maxWeek + "\n" + 
-            "ORDER BY 1,2,3";
+            String sql =
+                    "WITH v AS\n" +
+                            "  (SELECT p.Prod_Name Product_Name,\n" +
+                            "    t.Calendar_Year YEAR,\n" +
+                            "    t.Calendar_Week_Number Week,\n" +
+                            "    SUM(Amount_Sold) Sales\n" +
+                            "  FROM Sales s,\n" +
+                            "    Times t,\n" +
+                            "    Products p\n" +
+                            "  WHERE s.Time_id      = t.Time_id\n" +
+                            "  AND s.Prod_id        = p.Prod_id\n" +
+                            "  AND p.Prod_name     IN (" + selectedProduct + ")\n" +
+                            "  and T.CALENDAR_YEAR IN (" + yearRange + ")\n" +
+                            "  AND t.Calendar_Week_Number BETWEEN " + minWeek + " AND  " + maxWeek + "\n" +
+                            "  GROUP BY p.Prod_Name,\n" +
+                            "    t.Calendar_Year,\n" +
+                            "    t.Calendar_Week_Number\n" +
+                            "  )\n" +
+                            "SELECT Product_Name Prod,\n" +
+                            "  YEAR,\n" +
+                            "  Week,\n" +
+                            "  Sales,\n" +
+                            "  Weekly_ytd_sales,\n" +
+                            "  Weekly_ytd_sales_prior_year\n" +
+                            "FROM\n" +
+                            "  (SELECT --Start of year_over_year sales\n" +
+                            "    Product_Name,\n" +
+                            "    YEAR,\n" +
+                            "    Week,\n" +
+                            "    Sales,\n" +
+                            "    Weekly_ytd_sales,\n" +
+                            "    LAG(Weekly_ytd_sales, 1) OVER (PARTITION BY Product_Name, Week ORDER BY YEAR) Weekly_ytd_sales_prior_year\n" +
+                            "  FROM\n" +
+                            "    (SELECT -- Start of dense_sales\n" +
+                            "      v.Product_Name Product_Name,\n" +
+                            "      t.Year YEAR,\n" +
+                            "      t.Week Week,\n" +
+                            "      NVL(v.Sales,0) Sales,\n" +
+                            "      SUM(NVL(v.Sales,0)) OVER (PARTITION BY v.Product_Name, t.Year ORDER BY t.week) weekly_ytd_sales\n" +
+                            "    FROM v PARTITION BY (v.Product_Name)\n" +
+                            "    RIGHT OUTER JOIN\n" +
+                            "      (SELECT DISTINCT Calendar_Week_Number Week,\n" +
+                            "        Calendar_Year YEAR\n" +
+                            "      FROM Times\n" +
+                            "      WHERE Calendar_Year IN (" + yearRange + ")\n" +
+                            "      ) t\n" +
+                            "    ON (v.week = t.week\n" +
+                            "    AND v.Year = t.Year)\n" +
+                            "    ) dense_sales\n" +
+                            "  ) year_over_year_sales\n" +
+                            "where year = " + lastYear + "\n" +
+                            "AND WEEK BETWEEN " + minWeek + " AND  " + maxWeek + "\n" +
+                            "ORDER BY 1,2,3";
             logger.finest(sql);
             ResultSet rs = st.executeQuery(sql);
             rs.next();

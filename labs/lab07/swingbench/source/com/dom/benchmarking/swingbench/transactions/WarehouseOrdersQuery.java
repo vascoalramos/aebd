@@ -12,22 +12,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 public class WarehouseOrdersQuery extends OrderEntryProcess {
     private static final Logger logger = Logger.getLogger(WarehouseOrdersQuery.class.getName());
-    private PreparedStatement   ps = null;
+    private PreparedStatement ps = null;
 
     public WarehouseOrdersQuery() {
         super();
     }
 
-    public void init(Map params) {}
+    public void init(Map params) {
+    }
 
     public void execute(Map params) throws SwingBenchException {
 
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
 
         int warehouseID = RandomGenerator.randomInteger(1, 1000);
@@ -40,15 +42,15 @@ public class WarehouseOrdersQuery extends OrderEntryProcess {
                 ResultSet rs = null;
                 try {
                     ps = connection.prepareStatement(
-                        "SELECT order_mode,\n" +
-                        "  orders.warehouse_id,\n" +
-                        "  SUM(order_total),\n" +
-                        "  COUNT(1)\n" +
-                        "FROM orders,\n" +
-                        "  warehouses\n" +
-                        "WHERE orders.warehouse_id   = warehouses.warehouse_id\n" +
-                        "AND warehouses.warehouse_id = ?\n" +
-                        "GROUP BY cube(orders.order_mode, orders.warehouse_id)");
+                            "SELECT order_mode,\n" +
+                                    "  orders.warehouse_id,\n" +
+                                    "  SUM(order_total),\n" +
+                                    "  COUNT(1)\n" +
+                                    "FROM orders,\n" +
+                                    "  warehouses\n" +
+                                    "WHERE orders.warehouse_id   = warehouses.warehouse_id\n" +
+                                    "AND warehouses.warehouse_id = ?\n" +
+                                    "GROUP BY cube(orders.order_mode, orders.warehouse_id)");
                     ps.setInt(1, warehouseID);
                     rs = ps.executeQuery();
                     rs.next();
@@ -57,8 +59,9 @@ public class WarehouseOrdersQuery extends OrderEntryProcess {
                     hardClose(ps);
                 }
             } catch (SQLException se) {
-                se.printStackTrace();
-                throw new SwingBenchException(se.getMessage());
+                logger.log(Level.FINE, String.format("Exception : ", se.getMessage()));
+                logger.log(Level.FINEST, "SQLException thrown : ", se);
+                throw new SwingBenchException(se);
             }
 
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), true, getInfoArray()));
@@ -68,5 +71,6 @@ public class WarehouseOrdersQuery extends OrderEntryProcess {
         }
     }
 
-    public void close() {}
+    public void close() {
+    }
 }

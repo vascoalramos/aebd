@@ -21,7 +21,8 @@ CREATE TABLE customers
     preferred_card        NUMBER(12)
     ) &compress initrans 16
     PARTITION BY HASH(customer_id)
-    PARTITIONS &partitioncount;
+    PARTITIONS &partitioncount
+    STORAGE (INITIAL 8M NEXT 8M);
 
 
 
@@ -38,7 +39,8 @@ CREATE TABLE addresses
     zip_code              VARCHAR(12)
     ) &compress initrans 16
     PARTITION BY HASH(address_id)
-    PARTITIONS &partitioncount;
+    PARTITIONS &partitioncount
+    STORAGE (INITIAL 8M NEXT 8M);
 
 
 
@@ -52,7 +54,8 @@ CREATE TABLE card_details
     security_code NUMBER(6)
   ) &compress initrans 16
     PARTITION BY HASH(customer_id)
-    PARTITIONS &partitioncount;
+    PARTITIONS &partitioncount
+    STORAGE (INITIAL 8M NEXT 8M);
 
 
 CREATE TABLE warehouses
@@ -77,7 +80,8 @@ CREATE TABLE order_items
     estimated_delivery      DATE
     ) &compress initrans 16
     PARTITION BY HASH(order_id)
-    PARTITIONS &partitioncount;
+    PARTITIONS &partitioncount
+    STORAGE (INITIAL 8M NEXT 8M);
 
 
 CREATE TABLE orders
@@ -99,7 +103,8 @@ CREATE TABLE orders
     invoice_address_id      NUMBER(12)
     ) &compress initrans 16
     PARTITION BY HASH(order_id)
-    PARTITIONS &partitioncount;
+    PARTITIONS &partitioncount
+    STORAGE (INITIAL 8M NEXT 8M);
 
 
 
@@ -107,7 +112,8 @@ CREATE TABLE inventories
    ( product_id         NUMBER(6)
    , warehouse_id       NUMBER(6) CONSTRAINT inventory_warehouse_id_nn NOT NULL
    , quantity_on_hand   NUMBER(8) CONSTRAINT inventory_qoh_nn NOT NULL
-   ) &compress initrans 16 pctfree 80 pctused 20;
+   ) &compress INITRANS 16 PCTFREE 80 PCTUSED 20
+   STORAGE (INITIAL 8M NEXT 8M);
 
 
 CREATE TABLE product_information

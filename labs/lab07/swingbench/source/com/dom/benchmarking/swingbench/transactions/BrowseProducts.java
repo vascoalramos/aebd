@@ -16,12 +16,13 @@ import java.util.logging.Logger;
 
 public class BrowseProducts extends OrderEntryProcess {
     private static final Logger logger = Logger.getLogger(com.dom.benchmarking.swingbench.plsqltransactions.BrowseProducts.class.getName());
-    private long                custID = 0;
+    private long custID = 0;
 
-    public BrowseProducts() {}
+    public BrowseProducts() {
+    }
 
     public void init(Map params) {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         try {
             this.getMaxandMinCustID(connection, params);
         } catch (SQLException se) {
@@ -31,7 +32,7 @@ public class BrowseProducts extends OrderEntryProcess {
 
     public void execute(Map params) throws SwingBenchException {
 
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
 
         long executeStart = System.nanoTime();
@@ -54,10 +55,10 @@ public class BrowseProducts extends OrderEntryProcess {
                     thinkSleep();
                 }
 
-
             } catch (SQLException se) {
-                se.printStackTrace();
-                throw new SwingBenchException(se.getMessage());
+                logger.log(Level.FINE, String.format("Exception : ", se.getMessage()));
+                logger.log(Level.FINEST, "SQLException thrown : ", se);
+                throw new SwingBenchException(se);
             }
 
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), true, getInfoArray()));
@@ -67,5 +68,6 @@ public class BrowseProducts extends OrderEntryProcess {
         }
     }
 
-    public void close() {}
+    public void close() {
+    }
 }

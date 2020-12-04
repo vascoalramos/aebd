@@ -28,9 +28,9 @@ public class ProcessOrders extends OrderEntryProcess {
     }
 
     public void init(Map params) {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
-        Boolean commitClientSide = Boolean.parseBoolean((String)params.get(SwingBenchTask.COMMIT_CLIENT_SIDE));
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         try {
+            this.parseCommitClientSide(params);
             this.setCommitClientSide(connection, commitClientSide);
         } catch (SQLException se) {
             logger.log(Level.SEVERE, "Unable to set commit location", se);
@@ -38,48 +38,35 @@ public class ProcessOrders extends OrderEntryProcess {
     }
 
     public void execute(Map params) throws SwingBenchException {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         int queryTimeOut = 60;
 
         if (params.get(SwingBenchTask.QUERY_TIMEOUT) != null) {
-            queryTimeOut = ((Integer)(params.get(SwingBenchTask.QUERY_TIMEOUT))).intValue();
+            queryTimeOut = (Integer) (params.get(SwingBenchTask.QUERY_TIMEOUT));
         }
 
         long executeStart = System.nanoTime();
-        int[] infoArray = null;
-        boolean sucessfulTransaction = true;
+        initJdbcTask();
 
         try {
-            CallableStatement cs = null;
-            try {
-                cs = connection.prepareCall("{? = call orderentry.processorders(?,?,?)}");
+            try (CallableStatement cs = connection.prepareCall("{? = call orderentry.processorders(?,?,?)}")) {
                 cs.registerOutParameter(1, OracleTypes.VARCHAR);
-                cs.setInt(2, (int)RandomGenerator.randomInteger(MIN_WAREHOUSE_ID, MAX_WAREHOUSE_ID));
-                cs.setInt(3, (int)this.getMinSleepTime());
-                cs.setInt(4, (int)this.getMaxSleepTime());
-
+                cs.setInt(2, (int) RandomGenerator.randomInteger(MIN_WAREHOUSE_ID, MAX_WAREHOUSE_ID));
+                cs.setInt(3, (int) this.getMinSleepTime());
+                cs.setInt(4, (int) this.getMaxSleepTime());
                 cs.setQueryTimeout(queryTimeOut);
                 cs.executeUpdate();
-                infoArray = parseInfoArray(cs.getString(1));
-                if (infoArray[ROLLBACK_STATEMENTS] != 0)
-                    sucessfulTransaction = false;
-                cs.close();
+                parseInfoArray(cs.getString(1));
                 this.commit(connection);
-            } catch (SQLException se) {
-                //throw new SwingBenchException(se.getMessage());
-                try {
-                    cs.close();
-                } catch (Exception e) {
-                }
+            } catch (Exception se) {
                 throw new SwingBenchException(se);
-            } catch (Exception e) {
-                throw new SwingBenchException(e.getMessage());
             }
 
-            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), sucessfulTransaction, infoArray));
+            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), true, getInfoArray()));
         } catch (SwingBenchException ex) {
-            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), sucessfulTransaction, infoArray));
-            throw new SwingBenchException(ex);
+            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), false, getInfoArray()));
+            //            throw new SwingBenchException(ex);
+            throw ex;
         }
     }
 

@@ -27,7 +27,7 @@ public class SalesMovingAverage extends SalesHistory {
             if (!isDataCached()) {
                 synchronized (lock) {
                     if (!isDataCached()) {
-                        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+                        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
                         cacheData(connection);
                     }
                 }
@@ -39,22 +39,23 @@ public class SalesMovingAverage extends SalesHistory {
     }
 
     public void execute(Map param) throws SwingBenchException {
-        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         long executeStart = System.nanoTime();
         try {
             OracleUtilities.setModuleInfo(connection, "SalesMovingAverage");
             Statement st = connection.createStatement();
-            String sql = "SELECT t.time_id,\n" +
-                "  to_char(SUM(amount_sold),   '9,999,999,999') AS sales,\n" +
-                "  to_char(AVG(SUM(amount_sold)) over(ORDER BY t.time_id range BETWEEN INTERVAL '2' DAY preceding AND INTERVAL '2' DAY following),   '9,999,999,999') AS\n" +
-                "centered_5_day_avg\n" +
-                "FROM sales s,\n" +
-                "  times t\n" +
-                "WHERE t.calendar_month_desc IN(" + getRandomStringData(2, 5, getMonths(), "'") + ")\n" +
-                " AND s.time_id = t.time_id\n" +
-                "GROUP BY t.time_id\n" +
-                "ORDER BY t.time_id";
+            String sql =
+                    "SELECT t.time_id,\n" +
+                            "  to_char(SUM(amount_sold),   '9,999,999,999') AS sales,\n" +
+                            "  to_char(AVG(SUM(amount_sold)) over(ORDER BY t.time_id range BETWEEN INTERVAL '2' DAY preceding AND INTERVAL '2' DAY following),   '9,999,999,999') AS\n" +
+                            "centered_5_day_avg\n" +
+                            "FROM sales s,\n" +
+                            "  times t\n" +
+                            "WHERE t.calendar_month_desc IN(" + getRandomStringData(2, 5, getMonths(), "'") + ")\n" +
+                            " AND s.time_id = t.time_id\n" +
+                            "GROUP BY t.time_id\n" +
+                            "ORDER BY t.time_id";
             logger.finest(sql);
             ResultSet rs = st.executeQuery(sql);
             rs.next();

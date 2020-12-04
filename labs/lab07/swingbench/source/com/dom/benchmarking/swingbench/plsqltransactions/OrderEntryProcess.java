@@ -3,14 +3,9 @@ package com.dom.benchmarking.swingbench.plsqltransactions;
 
 import com.dom.benchmarking.swingbench.constants.Constants;
 import com.dom.benchmarking.swingbench.kernel.DatabaseTransaction;
+import com.dom.benchmarking.swingbench.kernel.SwingBenchTask;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.util.logging.*;
+import java.sql.*;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -19,69 +14,65 @@ import java.util.logging.Logger;
 public abstract class OrderEntryProcess extends DatabaseTransaction {
 
     private static final Logger logger = Logger.getLogger(OrderEntryProcess.class.getName());
-    static final String NEW_CUSTOMER = "New Customer";
-    static final String CUTOMER_ORDER = "Customer Order";
-    static final String CUSTOMER_BROWSE = "Customer Browse";
-    static final String GET_CUSTOMER_SEQ_TX = "Get Customer Sequence";
-    static final String GET_ORDER_SEQ_TX = "Get Order Sequence";
-    static final String INSERT_CUSTOMER_TX = "Insert New Customer";
-    static final String INSERT_ITEM_TX = "Insert Order Item";
-    static final String INSERT_ORDER_TX = "Insert Order";
-    static final String UPDATE_ORDER_TX = "Update Order";
-    static final String UPDATE_WAREHOUSE_TX = "Update Warehouse";
-    static final String GET_CUSTOMER_DETAILS_TX = "Get Customer Details";
-    static final String BROWSE_PENDING_ORDERS = "Browse Pending Orders";
-    static final String BROWSE_BY_PROD_ID = "Browse Product by ID";
-    static final String BROWSE_BY_CATEGORY_TX = "Browse Products by Category";
-    static final String BROWSE_BY_CAT_QUAN_TX = "Browse Products by Quantity";
-    static final String BROWSE_BY_ORDER_ID = "Browse Orders by ID";
-    static final String BROWSE_ORDER_DETAILS = "Browse Order Details";
-    static final String UPDATE_PENDING_ORDERS = "Update Pending Orders";
-    static final String GET_ORDER_BY_CUSTOMER_TX = "Browse Order by Customer";
-    static final int MIN_CATEGORY = 11;
-    static final int MAX_CATEGORY = 39;
-    static final int MAX_BROWSE_CATEGORY = 6;
-    static final int MAX_CREDITLIMIT = 5000;
-    static final int MIN_CREDITLIMIT = 100;
-    static final int MIN_SALESID = 145;
-    static final int MAX_SALESID = 171;
-    static final int MIN_PRODS_TO_BUY = 2;
-    static final int MAX_PRODS_TO_BUY = 6;
-    static final int MIN_PROD_ID = 1726;
-    static final int MAX_PROD_ID = 3515;
+    //    static final String NEW_CUSTOMER = "New Customer";
+//    static final String CUTOMER_ORDER = "Customer Order";
+//    static final String CUSTOMER_BROWSE = "Customer Browse";
+//    static final String GET_CUSTOMER_SEQ_TX = "Get Customer Sequence";
+//    static final String GET_ORDER_SEQ_TX = "Get Order Sequence";
+//    static final String INSERT_CUSTOMER_TX = "Insert New Customer";
+//    static final String INSERT_ITEM_TX = "Insert Order Item";
+//    static final String INSERT_ORDER_TX = "Insert Order";
+//    static final String UPDATE_ORDER_TX = "Update Order";
+//    static final String UPDATE_WAREHOUSE_TX = "Update Warehouse";
+//    static final String GET_CUSTOMER_DETAILS_TX = "Get Customer Details";
+//    static final String BROWSE_PENDING_ORDERS = "Browse Pending Orders";
+//    static final String BROWSE_BY_PROD_ID = "Browse Product by ID";
+//    static final String BROWSE_BY_CATEGORY_TX = "Browse Products by Category";
+//    static final String BROWSE_BY_CAT_QUAN_TX = "Browse Products by Quantity";
+//    static final String BROWSE_BY_ORDER_ID = "Browse Orders by ID";
+//    static final String BROWSE_ORDER_DETAILS = "Browse Order Details";
+//    static final String UPDATE_PENDING_ORDERS = "Update Pending Orders";
+//    static final String GET_ORDER_BY_CUSTOMER_TX = "Browse Order by Customer";
+//    static final int MIN_CATEGORY = 11;
+//    static final int MAX_CATEGORY = 39;
+//    static final int MAX_BROWSE_CATEGORY = 6;
+//    static final int MAX_CREDITLIMIT = 5000;
+//    static final int MIN_CREDITLIMIT = 100;
+//    static final int MIN_SALESID = 145;
+//    static final int MAX_SALESID = 171;
+//    static final int MIN_PRODS_TO_BUY = 2;
+//    static final int MAX_PRODS_TO_BUY = 6;
+//    static final int MIN_PROD_ID = 1726;
+//    static final int MAX_PROD_ID = 3515;
     static final int MIN_WAREHOUSE_ID = 1;
     static final int MAX_WAREHOUSE_ID = 1000;
-    static final int AWAITING_PROCESSING = 4;
-    static final int ORDER_PROCESSED = 10;
+    //    static final int AWAITING_PROCESSING = 4;
+//    static final int ORDER_PROCESSED = 10;
     static long MIN_CUSTID = 0;
     static long MAX_CUSTID = 0;
     static long MIN_ORDERID = 0;
     static long MAX_ORDERID = 0;
-    static final int SELECT_STATEMENTS = 0;
-    static final int INSERT_STATEMENTS = 1;
-    static final int UPDATE_STATEMENTS = 2;
-    static final int DELETE_STATEMENTS = 3;
-    static final int COMMIT_STATEMENTS = 4;
-    static final int ROLLBACK_STATEMENTS = 5;
-    static final int SLEEP_TIME_LOC = 6;
+
     private static boolean isInitCompleted = false;
-    private static boolean commitClientSide = false;
-    private static Object lock = new Object();
+    static boolean commitClientSide = false;
+    private final static Object lock = new Object();
 
     public void commit(Connection connection) throws SQLException {
         if (commitClientSide) {
             connection.commit();
+            addCommitStatements(1);
         }
     }
 
-    public void setCommitClientSide(Connection connection, boolean commitClientSide) throws SQLException {
-        this.commitClientSide = commitClientSide;
-        CallableStatement cs = null;
-        cs = connection.prepareCall("{call orderentry.setPLSQLCOMMIT(?)}");
-        //logger.fine("Setting plsql commit to : " + Boolean.toString(!commitClientSide));
+    void setCommitClientSide(Connection connection, boolean commitClientSide) throws SQLException {
+        CallableStatement cs = connection.prepareCall("{call orderentry.setPLSQLCOMMIT(?)}");
         cs.setString(1, Boolean.toString(!commitClientSide));
         cs.executeUpdate();
         cs.close();
+    }
+
+    void parseCommitClientSide(Map params) {
+        this.commitClientSide = Boolean.parseBoolean((String) params.get(SwingBenchTask.COMMIT_CLIENT_SIDE));
     }
 
     public void getMaxandMinCustID(Connection connection, Map<String, Object> params) throws SQLException {
@@ -90,8 +81,8 @@ public abstract class OrderEntryProcess extends DatabaseTransaction {
 
             synchronized (lock) {
                 if (MAX_CUSTID == 0) {
-                    String minCI = (String)params.get(Constants.SOEMINCUSTOMERID);
-                    String maxCI = (String)params.get(Constants.SOEMAXCUSTOMERID);
+                    String minCI = (String) params.get(Constants.SOEMINCUSTOMERID);
+                    String maxCI = (String) params.get(Constants.SOEMAXCUSTOMERID);
                     if ((minCI != null) && (maxCI != null)) {
                         logger.fine("Acquiring customer counts from environment variables");
                         MIN_CUSTID = Long.parseLong(minCI);
@@ -151,6 +142,7 @@ public abstract class OrderEntryProcess extends DatabaseTransaction {
         }
     }
 
+
     public int[] parseInfoArray(String data) throws Exception {
         int[] result = new int[7];
         try {
@@ -162,13 +154,14 @@ public abstract class OrderEntryProcess extends DatabaseTransaction {
             result[COMMIT_STATEMENTS] = Integer.parseInt(st.nextToken());
             result[ROLLBACK_STATEMENTS] = Integer.parseInt(st.nextToken());
             result[SLEEP_TIME_LOC] = Integer.parseInt(st.nextToken());
+            setDMLArray(result);
             return result;
         } catch (Exception e) {
             throw new Exception("Unable to parse string returned from OrderEntry Package. String = " + data, e);
         }
     }
 
-    public void setIsStatic(boolean isStatic, Connection connection) throws SQLException {
+    void setIsStatic(boolean isStatic, Connection connection) throws SQLException {
         if (isStatic) {
             synchronized (lock) {
                 if (!isInitCompleted) {
@@ -183,13 +176,13 @@ public abstract class OrderEntryProcess extends DatabaseTransaction {
         }
     }
 
-    public void setDMLstatements(int[] dmlArray) {
-        addSelectStatements(dmlArray[SELECT_STATEMENTS]);
-        addInsertStatements(dmlArray[INSERT_STATEMENTS]);
-        addUpdateStatements(dmlArray[UPDATE_STATEMENTS]);
-        addDeleteStatements(dmlArray[DELETE_STATEMENTS]);
-        addCommitStatements(dmlArray[COMMIT_STATEMENTS]);
-        addRollbackStatements(dmlArray[ROLLBACK_STATEMENTS]);
-    }
+//    public void setDMLstatements(int[] dmlArray) {
+//        addSelectStatements(dmlArray[SELECT_STATEMENTS]);
+//        addInsertStatements(dmlArray[INSERT_STATEMENTS]);
+//        addUpdateStatements(dmlArray[UPDATE_STATEMENTS]);
+//        addDeleteStatements(dmlArray[DELETE_STATEMENTS]);
+//        addCommitStatements(dmlArray[COMMIT_STATEMENTS]);
+//        addRollbackStatements(dmlArray[ROLLBACK_STATEMENTS]);
+//    }
 
 }

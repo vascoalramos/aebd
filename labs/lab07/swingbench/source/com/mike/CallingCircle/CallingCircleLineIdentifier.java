@@ -3,7 +3,7 @@ package com.mike.CallingCircle;
 import com.mike.CallingCircle.*;
 
 
-public class CallingCircleLineIdentifier extends Object {
+public class CallingCircleLineIdentifier {
     private CallingLineIdentifier callingLineIdentifier;
     private String rowId;
     private String validFrom;

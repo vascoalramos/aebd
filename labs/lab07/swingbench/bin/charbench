@@ -5,7 +5,7 @@ cd `dirname "$0"`
 
 location=`echo $* | grep -c -- "-bg "`
 if [ $location != 0 ]; then
-	java -cp ../launcher LauncherBootstrap -executablename charbench charbenchbg $*
+	java -cp ../launcher LauncherBootstrap -executablename charbench charbenchbg "${@}"
 else
-	java -cp ../launcher LauncherBootstrap -executablename charbench charbench $*
+	java -cp ../launcher LauncherBootstrap -executablename charbench charbench "${@}"
 fi

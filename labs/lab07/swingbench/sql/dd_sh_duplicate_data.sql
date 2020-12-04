@@ -22,7 +22,8 @@ INTO &sales_target (
     TAX_REGION,
     AMOUNT_SOLD
 )
-SELECT PROD_ID,
+SELECT /*+ PARALLEL(8) */
+    PROD_ID,
     CUST_ID + &customeroffset,
     TIME_ID,
     CHANNEL_ID,
@@ -64,7 +65,8 @@ INTO &customer_target (
     CUST_EFF_TO,
     CUST_VALID
 )
-SELECT CUST_ID + &customeroffset,
+SELECT /*+ PARALLEL(8) */
+    CUST_ID + &customeroffset,
     CUST_FIRST_NAME,
     CUST_LAST_NAME,
     CUST_GENDER,
@@ -108,7 +110,8 @@ INTO &sd_target
     OS_DOC_SET_KANJI,
     COMMENTS
 )
-SELECT CUST_ID + &customeroffset,
+SELECT /*+ PARALLEL(8) */
+    CUST_ID + &customeroffset,
     EDUCATION,
     OCCUPATION,
     HOUSEHOLD_SIZE,

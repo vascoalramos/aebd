@@ -28,38 +28,35 @@ public class WarehouseActivityQuery extends OrderEntryProcess {
 
     public void execute(Map params) throws SwingBenchException {
 
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
 
         int warehouseID = RandomGenerator.randomInteger(1, 1000);
 
+        initJdbcTask();
         long executeStart = System.nanoTime();
-        int[] dmlArray = null;
-        boolean sucessfulTransaction = true;
-
         try {
-            try {
-                CallableStatement cs = connection.prepareCall("{? = call orderentry.WarehouseActivityQuery(?,?,?)}");
+            try (CallableStatement cs = connection.prepareCall("{? = call orderentry.WarehouseActivityQuery(?,?,?)}")) {
                 cs.registerOutParameter(1, OracleTypes.VARCHAR);
                 cs.setInt(2, warehouseID);
-                cs.setInt(3, (int)this.getMinSleepTime());
-                cs.setInt(4, (int)this.getMaxSleepTime());
+                cs.setInt(3, (int) this.getMinSleepTime());
+                cs.setInt(4, (int) this.getMaxSleepTime());
                 cs.executeUpdate();
-                dmlArray = parseInfoArray(cs.getString(1));
-                if (dmlArray[ROLLBACK_STATEMENTS] != 0)
-                    sucessfulTransaction = false;
-                cs.close();
-            } catch (SQLException se) {
-                //throw new SwingBenchException(se.getMessage());
+                parseInfoArray(cs.getString(1));
+            } catch (Exception se) {
+                logger.fine(String.format("Exception when calling store procedure orderentry.WarehouseActivityQuery in database : %s", se));
                 throw new SwingBenchException(se);
-            } catch (Exception e) {
-                throw new SwingBenchException(e.getMessage());
             }
 
-            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), sucessfulTransaction, getInfoArray()));
-        } catch (SwingBenchException sbe) {
-            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), sucessfulTransaction, getInfoArray()));
-            throw new SwingBenchException(sbe.getMessage());
+            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), true, getInfoArray()));
+        } catch (SwingBenchException ex) {
+            addRollbackStatements(1);
+            try {
+                connection.rollback();
+            } catch (SQLException ignored) {
+            }
+            processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() - executeStart), false, getInfoArray()));
+            throw ex;
         }
     }
 

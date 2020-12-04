@@ -4,17 +4,21 @@ http://www.dominicgiles.com/swingbench.html
 
 A faq is included in this directory
 
-New in this release
-
-* Added new transactions to sh benchmark
-* Percentiles now report 10th to 90th percentiles instead of just 25th,50th and 75th percentile
-* Added a new command line option to allow users to change stats collection target.
-* Added new commands to coordinator to make it simpler to use
-   * Changed -stop to -kill to better indicate what it does
-   * Changed -halt to -stop to indicate what it does
-   * Added -stopall to stop all attached clients
-   * Added -runall to start all attached clients
-   * Added -stats to enable all display aggregated transaction rates of all attached clients
+New in 2.6
+^^^^^^^^^^
+* Java 8 is now the only supported VM
+* New JSON benchmark
+* New TPC-DS Like benchmark
+* New Declarative approach to creating a user defined benchmark
+* New SQL Query Editor to create queriers for the user defined benchmark
+* New chart rendering engine
+* Starting swingbench without a named config file now shows a "Select Benchmark" dialogue
+* Many internal fixes
+* Normal stats collection estimates percentiles
+* The stats files also contain tps,cpu and io readings where available.
+* Support for remote connectivity to Oracle Cloud in connection dialogues
+* New "SBUtil" (Swingbench Utility) to validate benchmarks and scale them up (SH and OE Only at present)
+* New "results2pdf" utility to convert results files into pdfs
 
 New in 2.5
 ^^^^^^^^^^
@@ -52,6 +56,15 @@ New in 2.5
 * Fixed a problem where it wasn't possible to restart a benchmark run when using connection pooling
 * Improved stats
 * Fixed a problem when "full" stats weren't saved to the results file when a collection window was specified (-bs and -be)
+* Added new transactions to sh benchmark
+* Percentiles now report 10th to 90th percentiles instead of just 25th,50th and 75th percentile
+* Added a new command line option to allow users to change stats collection target.
+* Added new commands to coordinator to make it simpler to use
+   * Changed -stop to -kill to better indicate what it does
+   * Changed -halt to -stop to indicate what it does
+   * Added -stopall to stop all attached clients
+   * Added -runall to start all attached clients
+   * Added -stats to enable all display aggregated transaction rates of all attached clients
 
 
 
@@ -96,6 +109,6 @@ Unizip the swingbench<version number>.zip file
 Change into the newly created swingbench directory and then either the "bin" directory
 for Linux/Unix or the "winbin" for windows systems.
 
-Ensure java (1.6 or later) is in your executable path.
+Ensure java (Java 8 or later) is in your executable path.
 
 You should then be able to run swingbench or any of the wizards.

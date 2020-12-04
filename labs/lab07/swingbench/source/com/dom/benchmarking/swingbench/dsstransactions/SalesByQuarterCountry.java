@@ -28,7 +28,7 @@ public class SalesByQuarterCountry extends SalesHistory {
             if (!isDataCached()) {
                 synchronized (lock) {
                     if (!isDataCached()) {
-                        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+                        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
                         cacheData(connection);
                     }
                 }
@@ -40,7 +40,7 @@ public class SalesByQuarterCountry extends SalesHistory {
     }
 
     public void execute(Map param) throws SwingBenchException {
-        Connection connection = (Connection)param.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) param.get(SwingBenchTask.JDBC_CONNECTION);
         initJdbcTask();
         long executeStart = System.nanoTime();
         try {
@@ -48,22 +48,23 @@ public class SalesByQuarterCountry extends SalesHistory {
             String month = getRandomStringData(1, 2, getMonths(), null);
             String country = getRandomStringData(1, 2, getCountries(), null);
             Statement st = connection.createStatement();
-            String sql = "SELECT SUM(amount_sold),\n" +
-                "  t.calendar_month_desc,\n" +
-                "  t.calendar_week_number,\n" +
-                "  c.country_name\n" +
-                "FROM sales s,\n" +
-                "  times t,\n" +
-                "  countries c,\n" +
-                "  customers cu\n" +
-                "WHERE s.time_id        = t.time_id\n" +
-                "AND t.calendar_month_desc = '" + month + "'\n" +
-                "AND cu.country_id      = c.country_id\n" +
-                "AND s.cust_id          = cu.cust_id\n" +
-                "AND c.country_iso_code = '" + country + "'\n" +
-                "group by t.calendar_month_desc,\n" +
-                "t.calendar_week_number,\n" +
-                "c.country_name";
+            String sql =
+                    "SELECT SUM(amount_sold),\n" +
+                            "  t.calendar_month_desc,\n" +
+                            "  t.calendar_week_number,\n" +
+                            "  c.country_name\n" +
+                            "FROM sales s,\n" +
+                            "  times t,\n" +
+                            "  countries c,\n" +
+                            "  customers cu\n" +
+                            "WHERE s.time_id        = t.time_id\n" +
+                            "AND t.calendar_month_desc = '" + month + "'\n" +
+                            "AND cu.country_id      = c.country_id\n" +
+                            "AND s.cust_id          = cu.cust_id\n" +
+                            "AND c.country_iso_code = '" + country + "'\n" +
+                            "group by t.calendar_month_desc,\n" +
+                            "t.calendar_week_number,\n" +
+                            "c.country_name";
             logger.finest(sql);
             ResultSet rs = st.executeQuery(sql);
             rs.next();

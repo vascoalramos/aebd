@@ -19,7 +19,7 @@ public final class StressTestInsert extends StressTest {
     }
 
     public void execute(Map parameters) throws SwingBenchException {
-        Connection connection = (Connection)parameters.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) parameters.get(SwingBenchTask.JDBC_CONNECTION);
         PreparedStatement insPs = null;
         boolean success = true;
 
@@ -48,7 +48,7 @@ public final class StressTestInsert extends StressTest {
             } catch (SQLException e) {
             }
             processTransactionEvent(new JdbcTaskEvent(this, getId(), (System.nanoTime() -
-                                                                      executeStart), success, getSelectStatements(), getInsertStatements(), getUpdateStatements(), getDeleteStatements(), getCommitStatements(), getRollbackStatements()));
+                    executeStart), success, getSelectStatements(), getInsertStatements(), getUpdateStatements(), getDeleteStatements(), getCommitStatements(), getRollbackStatements()));
         }
     }
 

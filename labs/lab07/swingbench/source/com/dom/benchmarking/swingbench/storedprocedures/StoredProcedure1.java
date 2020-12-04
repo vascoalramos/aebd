@@ -6,15 +6,17 @@ import com.dom.benchmarking.swingbench.kernel.DatabaseTransaction;
 import com.dom.benchmarking.swingbench.kernel.SwingBenchException;
 import com.dom.benchmarking.swingbench.kernel.SwingBenchTask;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import java.util.Arrays;
+import java.util.DoubleSummaryStatistics;
 import java.util.Map;
 
 import oracle.jdbc.OracleTypes;
-
-import java.sql.Array;
 
 
 public class StoredProcedure1 extends DatabaseTransaction {
@@ -28,11 +30,11 @@ public class StoredProcedure1 extends DatabaseTransaction {
     }
 
     public void execute(Map params) throws SwingBenchException {
-        Connection connection = (Connection)params.get(SwingBenchTask.JDBC_CONNECTION);
+        Connection connection = (Connection) params.get(SwingBenchTask.JDBC_CONNECTION);
         int queryTimeOut = 60;
 
         if (params.get(SwingBenchTask.QUERY_TIMEOUT) != null) {
-            queryTimeOut = ((Integer)(params.get(SwingBenchTask.QUERY_TIMEOUT))).intValue();
+            queryTimeOut = ((Integer) (params.get(SwingBenchTask.QUERY_TIMEOUT))).intValue();
         }
 
         long executeStart = System.nanoTime();
@@ -42,12 +44,13 @@ public class StoredProcedure1 extends DatabaseTransaction {
             try {
                 CallableStatement cs = connection.prepareCall("{? = call swingbench.storedprocedure1(?,?)}");
                 cs.registerOutParameter(1, OracleTypes.ARRAY, "INTEGER_RETURN_ARRAY");
-                cs.setInt(2, (int)this.getMinSleepTime());
-                cs.setInt(3, (int)this.getMaxSleepTime());
+                cs.setInt(2, (int) this.getMinSleepTime());
+                cs.setInt(3, (int) this.getMaxSleepTime());
                 cs.setQueryTimeout(queryTimeOut);
                 cs.executeUpdate();
-                //
-                dmlArray = (int[])cs.getArray(1).getArray();
+                BigDecimal[] dmlArrayResult = (BigDecimal[]) cs.getArray(1).getArray();
+                // Oddly the array is an array of BigDecimals. Expected int[].
+                dmlArray = Arrays.stream(dmlArrayResult).map(d -> d.intValueExact()).mapToInt(i -> i).toArray();
                 cs.close();
             } catch (SQLException se) {
                 throw new SwingBenchException(se.getMessage());

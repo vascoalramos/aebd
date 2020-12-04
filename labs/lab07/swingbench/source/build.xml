@@ -6,7 +6,7 @@
   <property name="swingbenchlib" location="../lib"/>
   <property name="oracle" location="../lib"/>
   <path id="swingbench.class.path">
-    <pathelement path="${oracle}/ojdbc6.jar:${swingbenchlib}/swingbench.jar"/>
+    <pathelement path="${swingbenchlib}/orajsoda-1.1.0.jar:${swingbenchlib}/javax.json-1.0.4.jar:${oracle}/ojdbc8.jar:${swingbenchlib}/swingbench.jar"/>
   </path>
   <target name="init">
     <!-- Create the time stamp -->

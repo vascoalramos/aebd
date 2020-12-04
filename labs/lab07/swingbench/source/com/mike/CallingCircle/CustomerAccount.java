@@ -3,7 +3,7 @@ package com.mike.CallingCircle;
 import java.sql.Date;
 
 
-public class CustomerAccount extends Object {
+public class CustomerAccount {
     private Date lastFailedLogin;
     private Date lastLogin;
     private String name;

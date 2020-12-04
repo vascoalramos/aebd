@@ -4,9 +4,9 @@ package com.dom.benchmarking.swingbench.transactions;
 public class ProductDetails {
 
     double price;
-    int    productID;
-    int    quantityAvailable;
-    int    warehouseID;
+    int productID;
+    int quantityAvailable;
+    int warehouseID;
 
     public double getPrice() {
         return price;

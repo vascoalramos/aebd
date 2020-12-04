@@ -1,6 +1,8 @@
 
 -- Data Duplicate
 
+commit;
+
 alter session force parallel DML &parallelclause;
 
 alter session force parallel query &parallelclause;
@@ -167,5 +169,6 @@ select ORDER_ID + &orderoffset,
 from order_items &whereclause;
 
 commit;
+
 
 -- End of script

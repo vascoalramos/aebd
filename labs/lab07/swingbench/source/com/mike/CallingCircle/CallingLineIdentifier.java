@@ -1,6 +1,6 @@
 package com.mike.CallingCircle;
 
-public class CallingLineIdentifier extends Object {
+public class CallingLineIdentifier {
     private String CountryText;
     private String CountryType;
     private String CountryValue;
